@@ -1,10 +1,10 @@
-# Open Deep Research
+# insightforge-research
 
 An AI-powered research assistant that performs iterative, deep research on any topic by combining search engines, web scraping, and large language models.
 
-The goal of this repo is to provide the simplest implementation of a deep research agent - e.g. an agent that can refine its research direction over time and deep dive into a topic. Goal is to keep the repo size at <500 LoC so it is easy to understand and build on top of.
+The goal is a compact deep research agent that refines its research direction over time and explores a topic in depth. The original implementation aims to stay under 500 lines of code so it is easy to understand and extend.
 
-If you like this project, please consider starring it and giving me a follow on [X/Twitter](https://x.com/dzhng). This project is created by [Duet](https://duet.so).
+> **Attribution:** This README adapts the Open Deep Research project created by [Duet](https://duet.so). Its original author can be found on [X/Twitter](https://x.com/dzhng). The project display name here is **insightforge-research**; existing configuration names and runtime commands below retain their original values.
 
 ## How It Works
 
@@ -16,9 +16,7 @@ flowchart TB
         D[Depth Parameter]
     end
 
-    DR[Deep Research] -->
-    SQ[SERP Queries] -->
-    PR[Process Results]
+    DR[insightforge-research] --> SQ[SERP Queries] --> PR[Process Results]
 
     subgraph Results[Results]
         direction TB
@@ -38,20 +36,12 @@ flowchart TB
 
     MR[Markdown Report]
 
-    %% Main Flow
     Q & B & D --> DR
-
-    %% Results to Decision
     NL & ND --> DP
-
-    %% Circular Flow
     DP -->|Yes| RD
     RD -->|New Context| DR
-
-    %% Final Output
     DP -->|No| MR
 
-    %% Styling
     classDef input fill:#7bed9f,stroke:#2ed573,color:black
     classDef process fill:#70a1ff,stroke:#1e90ff,color:black
     classDef recursive fill:#ffa502,stroke:#ff7f50,color:black
@@ -67,64 +57,62 @@ flowchart TB
 
 ## Features
 
-- **Iterative Research**: Performs deep research by iteratively generating search queries, processing results, and diving deeper based on findings
-- **Intelligent Query Generation**: Uses LLMs to generate targeted search queries based on research goals and previous findings
-- **Depth & Breadth Control**: Configurable parameters to control how wide (breadth) and deep (depth) the research goes
-- **Smart Follow-up**: Generates follow-up questions to better understand research needs
-- **Comprehensive Reports**: Produces detailed markdown reports with findings and sources
-- **Concurrent Processing**: Handles multiple searches and result processing in parallel for efficiency
+- **Iterative Research**: Generates search queries, processes results, and explores deeper based on findings.
+- **Intelligent Query Generation**: Uses LLMs to generate targeted queries informed by research goals and previous findings.
+- **Depth & Breadth Control**: Controls how widely and deeply the system researches.
+- **Smart Follow-up**: Generates questions to clarify research needs.
+- **Comprehensive Reports**: Produces Markdown reports with findings and sources.
+- **Concurrent Processing**: Runs multiple searches and result-processing tasks in parallel.
 
 ## Requirements
 
 - Node.js environment
-- API keys for:
-  - Firecrawl API (for web search and content extraction)
-  - OpenAI API (for o3 mini model)
+- API keys for Firecrawl (web search and extraction) and OpenAI (`o3-mini`), unless configured to use a supported local or alternative model endpoint.
 
 ## Setup
 
 ### Node.js
 
-1. Clone the repository
+1. Clone the repository.
 2. Install dependencies:
 
-```bash
-npm install
-```
+   ```bash
+   npm install
+   ```
 
-3. Set up environment variables in a `.env.local` file:
+3. Add configuration to `.env.local`:
 
-```bash
-FIRECRAWL_KEY="your_firecrawl_key"
-# If you want to use your self-hosted Firecrawl, add the following below:
-# FIRECRAWL_BASE_URL="http://localhost:3002"
+   ```bash
+   FIRECRAWL_KEY="your_firecrawl_key"
+   # If using a self-hosted Firecrawl instance:
+   # FIRECRAWL_BASE_URL="http://localhost:3002"
 
-OPENAI_KEY="your_openai_key"
-```
+   OPENAI_KEY="your_openai_key"
+   ```
 
-To use local LLM, comment out `OPENAI_KEY` and instead uncomment `OPENAI_ENDPOINT` and `OPENAI_MODEL`:
+To use a local LLM, comment out `OPENAI_KEY` and configure `OPENAI_ENDPOINT` and `OPENAI_MODEL` instead:
 
-- Set `OPENAI_ENDPOINT` to the address of your local server (eg."http://localhost:1234/v1")
-- Set `OPENAI_MODEL` to the name of the model loaded in your local server.
+- Set `OPENAI_ENDPOINT` to the address of your local server, for example `http://localhost:1234/v1`.
+- Set `OPENAI_MODEL` to the loaded model's name.
 
 ### Docker
 
-1. Clone the repository
-2. Rename `.env.example` to `.env.local` and set your API keys
+1. Clone the repository.
+2. Rename `.env.example` to `.env.local` and set the API keys.
+3. Build the Docker image using the repository's Dockerfile.
+4. Start the services:
 
-3. Run `docker build -f Dockerfile`
+   ```bash
+   docker compose up -d
+   ```
 
-4. Run the Docker image:
+5. Run the research command in the container:
 
-```bash
-docker compose up -d
-```
+   ```bash
+   docker exec -it deep-research npm run docker
+   ```
 
-5. Execute `npm run docker` in the docker service:
-
-```bash
-docker exec -it deep-research npm run docker
-```
+The `deep-research` name in the Docker command is the original container identifier. Adjust it only if your Docker Compose configuration uses a different name.
 
 ## Usage
 
@@ -134,75 +122,47 @@ Run the research assistant:
 npm start
 ```
 
-You'll be prompted to:
+You will be prompted to:
 
-1. Enter your research query
-2. Specify research breadth (recommended: 3-10, default: 4)
-3. Specify research depth (recommended: 1-5, default: 2)
-4. Answer follow-up questions to refine the research direction
+1. Enter a research query.
+2. Set research breadth (recommended: 3–10; default: 4).
+3. Set research depth (recommended: 1–5; default: 2).
+4. Answer follow-up questions to refine the direction.
 
-The system will then:
-
-1. Generate and execute search queries
-2. Process and analyze search results
-3. Recursively explore deeper based on findings
-4. Generate a comprehensive markdown report
-
-The final report will be saved as `report.md` or `answer.md` in your working directory, depending on which modes you selected.
+The system generates and runs searches, analyzes results, recursively explores findings, and creates a Markdown report. Depending on the selected mode, it saves the report as `report.md` or `answer.md` in the working directory.
 
 ### Concurrency
 
-If you have a paid version of Firecrawl or a local version, feel free to increase the `ConcurrencyLimit` by setting the `CONCURRENCY_LIMIT` environment variable so it runs faster.
-
-If you have a free version, you may sometimes run into rate limit errors, you can reduce the limit to 1 (but it will run a lot slower).
+With a paid or local Firecrawl instance, you can increase `CONCURRENCY_LIMIT` for faster processing. On the free plan, reduce it to `1` if rate-limit errors occur.
 
 ### DeepSeek R1
 
-Deep research performs great on R1! We use [Fireworks](http://fireworks.ai) as the main provider for the R1 model. To use R1, simply set a Fireworks API key:
+The original setup uses [Fireworks](http://fireworks.ai) for DeepSeek R1. Set its API key to select R1 instead of `o3-mini`:
 
 ```bash
 FIREWORKS_KEY="api_key"
 ```
 
-The system will automatically switch over to use R1 instead of `o3-mini` when the key is detected.
-
 ### Custom endpoints and models
 
-There are 2 other optional env vars that lets you tweak the endpoint (for other OpenAI compatible APIs like OpenRouter or Gemini) as well as the model string.
+Use these optional variables for an OpenAI-compatible API endpoint, such as OpenRouter or Gemini, and a custom model name:
 
 ```bash
 OPENAI_ENDPOINT="custom_endpoint"
 CUSTOM_MODEL="custom_model"
 ```
 
-## How It Works
+## Research Process
 
-1. **Initial Setup**
+1. **Initial setup:** Accepts the query, breadth, and depth, then asks follow-up questions.
+2. **Deep research:** Creates SERP queries, extracts key learnings, and proposes new research directions.
+3. **Recursive exploration:** Continues while the depth budget remains, carrying goals and previous findings forward.
+4. **Report generation:** Organizes findings, sources, and references into a readable Markdown report.
 
-   - Takes user query and research parameters (breadth & depth)
-   - Generates follow-up questions to understand research needs better
+## Community Implementations
 
-2. **Deep Research Process**
-
-   - Generates multiple SERP queries based on research goals
-   - Processes search results to extract key learnings
-   - Generates follow-up research directions
-
-3. **Recursive Exploration**
-
-   - If depth > 0, takes new research directions and continues exploration
-   - Each iteration builds on previous learnings
-   - Maintains context of research goals and findings
-
-4. **Report Generation**
-   - Compiles all findings into a comprehensive markdown report
-   - Includes all sources and references
-   - Organizes information in a clear, readable format
-  
-## Community implementations
-
-**Python**: https://github.com/Finance-LLMs/deep-research-python
+**Python:** [deep-research-python](https://github.com/Finance-LLMs/deep-research-python)
 
 ## License
 
-MIT License - feel free to use and modify as needed.
+MIT License — see the repository license for the applicable terms.
